@@ -6,4 +6,3 @@ db:
   username: postgres
   password: postgres
   name: postgres
-  pass: ${}
