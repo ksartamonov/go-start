@@ -1,0 +1,72 @@
+{
+	"info": {
+		"_postman_id": "64fbac77-82ee-4ab1-ab8a-1d5f3f7aa5a4",
+		"name": "go-start",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24163238"
+	},
+	"item": [
+		{
+			"name": "Save",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"test\",\n    \"properties\": [\n    {\n        \"parameter\": \"test_parameter_1\",\n        \"value\": \"test_data_1\"\n    },\n        {\n        \"parameter\": \"test_parameter_2\",\n        \"value\": \"test_data_2\"\n    },\n        {\n        \"parameter\": \"test_parameter_3\",\n        \"value\": \"test_data_3\"\n    }\n]\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/v1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"v1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get By Name",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"test\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/v1/test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"v1",
+						"test"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
