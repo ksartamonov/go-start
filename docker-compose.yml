@@ -1,6 +1,17 @@
 version: '3.3'
 services:
-  nc-start-db:
+
+  go-start:
+    image: go-start
+    container_name: go-start-container
+    build: .
+    ports:
+      - "8081:8080"
+    depends_on:
+      - go-start-db
+    restart: always
+
+  go-start-db:
     container_name: go-start-db
     image: postgres
     ports:
