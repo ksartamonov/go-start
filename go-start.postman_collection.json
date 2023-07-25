@@ -45,7 +45,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"test\"\n}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
