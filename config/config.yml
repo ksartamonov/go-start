@@ -1,8 +1,6 @@
 port: "8080"
 db:
   host: go-start-db
-#  host: localhost
   port: 5432
   username: postgres
-  password: postgres
   name: postgres

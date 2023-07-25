@@ -19,7 +19,3 @@ func NewRepository(db *pgx.Conn) *Repository {
 		DataRepository: impl.NewDataRepositoryImpl(db),
 	}
 }
-
-//func NewRepository() *Repository {
-//	return &Repository{}
-//}
