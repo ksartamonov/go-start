@@ -1,7 +1,12 @@
 package main
 
 import (
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/golang-migrate/migrate/v4/source/github"
 	"github.com/joho/godotenv"
+	_ "github.com/mattes/migrate/source/file"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"go-start/pkg/handler"
@@ -30,6 +35,16 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("error initializing db: %s", err.Error())
 	}
+
+	//m, err := migrate.New(viper.GetString("db.migration"), viper.GetString("db.url"))
+	m, err := migrate.New("file://schema", "postgres://postgres:postgres@localhost:54321/postgres?sslmode=disable")
+	if err != nil {
+		logrus.Fatalf("error creating migration: %s", err.Error())
+	}
+	if err = m.Up(); err != nil && err != migrate.ErrNoChange {
+		logrus.Fatalf("up migration error: %s", err.Error())
+	}
+
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
@@ -40,6 +55,9 @@ func main() {
 		logrus.Fatalf("error while running http server: %s", err.Error())
 	}
 
+	if err = m.Down(); err != nil && err != migrate.ErrNoChange {
+		logrus.Fatalf("down migration error: %s", err.Error())
+	}
 }
 
 func InitConfig() error {

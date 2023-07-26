@@ -1,2 +1,1 @@
-DROP TABLE parameter;
-DROP table property;
+DROP TABLE data

@@ -3,9 +3,9 @@ package impl
 import (
 	"context"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
-	"go-start/pkg/model"
 )
 
 type DataRepositoryImpl struct {
@@ -17,72 +17,46 @@ func NewDataRepositoryImpl(db *pgx.Conn) *DataRepositoryImpl {
 }
 
 // WriteData returns only id of inserted property (no info about parameters)
-func (repo *DataRepositoryImpl) WriteData(req model.SaveRequest) (int, error) {
-	var propertyId int // id of inserted property
-	query := fmt.Sprintf("INSERT INTO %s (name) VALUES ($1) RETURNING id", "property")
-	row := repo.db.QueryRow(context.Background(), query, req.Name)
+func (repo *DataRepositoryImpl) WriteData(name string, parameters map[string]interface{}) (int, error) {
+	var id int // id of inserted property
 
-	if err := row.Scan(&propertyId); err != nil {
+	query, _, err := sq.Insert("data").
+		Columns("name", "parameters").
+		Values(name, parameters).Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		logrus.Errorf("error building INSERT query: %s", err.Error())
+	}
+	row := repo.db.QueryRow(context.Background(), query, name, parameters)
+
+	if err := row.Scan(&id); err != nil {
 		logrus.Errorf("error getting id from row: %s", err.Error())
 		return -1, err
 	}
 
-	// inserting parameters
-	query = fmt.Sprintf("INSERT INTO %s (parameter, value, property_id) VALUES ($1, $2, $3)", "parameter")
-	for i := 0; i < len(req.Properties); i++ { // TODO: think may be optimized
-		_, err := repo.db.Exec(context.Background(), query, req.Properties[i].Parameter, req.Properties[i].Value, propertyId)
-		if err != nil {
-			logrus.Errorf("error writing to parameter table: %s", err.Error())
-			return -1, err
-		}
-	}
-
-	return propertyId, nil
+	return id, nil
 }
 
-func (repo *DataRepositoryImpl) GetPropertyByName(name string) (*model.GetResponse, error) {
-	query := `
-		SELECT p.id, p.name, pa.parameter, pa.value
-		FROM property p
-		LEFT JOIN parameter pa ON p.id = pa.property_id
-		WHERE p.name = $1
-	`
-	rows, err := repo.db.Query(context.Background(), query, name)
+func (repo *DataRepositoryImpl) GetParameterValue(parameterName string) ([]string, error) {
+	//query := `SELECT parameters->>$1 FROM data WHERE parameters ? $1 LIMIT 1`
+	query := `SELECT parameters->>$1 FROM data WHERE parameters ? $1`
+
+	rows, err := repo.db.Query(context.Background(), query, parameterName)
 	if err != nil {
-		logrus.Errorf("error executing query: %s", err.Error())
+		logrus.Errorf("error executing SQL query: %s", err.Error())
 		return nil, err
 	}
-	defer rows.Close()
 
-	getResp := &model.GetResponse{}
-	parameters := make([]model.Property, 0)
+	var result []string
 
 	for rows.Next() {
-		var id int
-		var name string
-		var parameter string
 		var value string
-
-		err := rows.Scan(&id, &name, &parameter, &value)
+		err := rows.Scan(&value)
 		if err != nil {
-			logrus.Errorf("error scanning row: %s", err.Error())
-			return nil, err
+			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
-
-		getResp.Id = id
-		getResp.Name = name
-		parameters = append(parameters, model.Property{
-			Parameter: parameter,
-			Value:     value,
-		})
+		result = append(result, value)
 	}
-
-	if err := rows.Err(); err != nil {
-		logrus.Errorf("error iterating over rows: %s", err.Error())
-		return nil, err
-	}
-
-	getResp.Properties = parameters
-
-	return getResp, nil
+	return result, nil
 }

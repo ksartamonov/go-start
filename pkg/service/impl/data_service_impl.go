@@ -14,9 +14,15 @@ func NewDataServiceImpl(repo repository.DataRepository) *DataServiceImpl {
 }
 
 func (service *DataServiceImpl) WriteData(req model.SaveRequest) (int, error) {
-	return service.repo.WriteData(req)
+
+	result := make(map[string]interface{})
+	for _, d := range req.Properties {
+		result[d.Parameter] = d.Value
+	}
+
+	return service.repo.WriteData(req.Name, result)
 }
 
-func (service *DataServiceImpl) GetPropertyByName(name string) (interface{}, error) {
-	return service.repo.GetPropertyByName(name)
+func (service *DataServiceImpl) GetParameterValue(name string) ([]string, error) {
+	return service.repo.GetParameterValue(name)
 }

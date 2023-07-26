@@ -8,7 +8,7 @@ import (
 
 type DataService interface {
 	WriteData(req model.SaveRequest) (int, error)
-	GetPropertyByName(name string) (interface{}, error)
+	GetParameterValue(name string) ([]string, error)
 }
 
 type Service struct {

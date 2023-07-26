@@ -17,7 +17,7 @@ func (h *Handler) RouteHandlers() *gin.Engine {
 	api := router.Group("/api/v1")
 	{
 		api.POST("/", h.handleSaveRequest)
-		api.GET("/:name", h.handleGetByNameRequest)
+		api.GET("/:name", h.handleGetParameterValueRequest)
 	}
 	return router
 }
@@ -47,14 +47,17 @@ func (h *Handler) handleSaveRequest(c *gin.Context) {
 	})
 }
 
-func (h *Handler) handleGetByNameRequest(c *gin.Context) {
+func (h *Handler) handleGetParameterValueRequest(c *gin.Context) {
 
 	name := c.Param("name")
 
-	res, err := h.services.DataService.GetPropertyByName(name)
+	res, err := h.services.DataService.GetParameterValue(name)
 	if err != nil {
 		model.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"parameter": name,
+		"values":    res,
+	})
 }
