@@ -16,7 +16,9 @@ import (
 )
 
 func main() {
-	logrus.SetFormatter(new(logrus.JSONFormatter))
+	logrus.SetFormatter(new(logrus.TextFormatter))
+	logrus.SetLevel(logrus.DebugLevel)
+
 	if err := InitConfig(); err != nil {
 		logrus.Fatalf("error while initializing configs: %s", err.Error())
 	}
@@ -36,8 +38,7 @@ func main() {
 		logrus.Fatalf("error initializing db: %s", err.Error())
 	}
 
-	//m, err := migrate.New(viper.GetString("db.migration"), viper.GetString("db.url"))
-	m, err := migrate.New("file://schema", "postgres://postgres:postgres@localhost:54321/postgres?sslmode=disable")
+	m, err := migrate.New(viper.GetString("db.migration"), viper.GetString("db.url"))
 	if err != nil {
 		logrus.Fatalf("error creating migration: %s", err.Error())
 	}
@@ -46,7 +47,7 @@ func main() {
 	}
 
 	repos := repository.NewRepository(db)
-	services := service.NewService(repos)
+	services := service.NewService(repos, []string{viper.GetString("kafka.broker")})
 	handlers := handler.NewHandler(services)
 
 	server := new(Server)
@@ -54,10 +55,10 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("error while running http server: %s", err.Error())
 	}
-
-	if err = m.Down(); err != nil && err != migrate.ErrNoChange {
-		logrus.Fatalf("down migration error: %s", err.Error())
-	}
+	//
+	//if err = m.Down(); err != nil && err != migrate.ErrNoChange {
+	//	logrus.Fatalf("down migration error: %s", err.Error())
+	//}
 }
 
 func InitConfig() error {

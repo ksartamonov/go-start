@@ -2,10 +2,10 @@ package impl
 
 import (
 	"context"
-	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
+	"go-start/pkg/model"
 )
 
 type DataRepositoryImpl struct {
@@ -54,9 +54,35 @@ func (repo *DataRepositoryImpl) GetParameterValue(parameterName string) ([]strin
 		var value string
 		err := rows.Scan(&value)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
+			logrus.Errorf("error scanning row: %s", err.Error())
+			return nil, err
 		}
 		result = append(result, value)
 	}
 	return result, nil
+}
+
+func (repo *DataRepositoryImpl) GetByPair(property model.Property) (model.GetByPairResponse, error) {
+	query := "SELECT id, name, parameters FROM data WHERE parameters->>$1 = $2"
+	rows, err := repo.db.Query(context.Background(), query, property.Parameter, property.Value)
+	if err != nil {
+		logrus.Errorf("error executing SQL query: %s", err.Error())
+		return model.GetByPairResponse{}, err
+	}
+
+	var response model.GetByPairResponse
+	var entities []model.Entity
+
+	for rows.Next() {
+		var entity model.Entity
+		err := rows.Scan(&entity.Id, &entity.Name, &entity.Properties)
+		if err != nil {
+			logrus.Errorf("error scanning row: %s", err.Error())
+			return model.GetByPairResponse{}, err
+		}
+		entities = append(entities, entity)
+	}
+
+	response.Entities = entities
+	return response, nil
 }

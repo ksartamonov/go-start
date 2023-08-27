@@ -8,3 +8,13 @@ db:
   name: postgres
   url: postgres://postgres:postgres@localhost:54321/postgres?sslmode=disable
   migration: file://schema
+kafka:
+  broker: localhost:29092
+
+testdb:
+  host: localhost
+  port: 54321
+  username: postgres
+  name: postgres
+  url: postgres://postgres:postgres@localhost:54320/postgres?sslmode=disable
+  migration: file://schema

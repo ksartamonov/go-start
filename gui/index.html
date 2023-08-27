@@ -1,0 +1,30 @@
+<html>
+<header>
+    <meta charset="UTF-8">
+    <script>
+        console.log("My first front")
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', "http://localhost:8080/api/v1/test_parameter_1")
+        xhr.send();
+        xhr.onload = function () {
+            console.log('Got:', xhr.status, xhr.response)
+            document.getElementById("value").textContent = JSON.parse(xhr.response).values
+        }
+    </script>
+
+    <style>
+        span {
+            color: blueviolet;
+        }
+    </style>
+</header>
+<body>
+<div>
+    Hello world!
+</div>
+<div>
+    <span>Total:</span>
+    <span id="value">Loading...</span>
+</div>
+</body>
+</html>
